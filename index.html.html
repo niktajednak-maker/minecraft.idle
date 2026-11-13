@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Clicker</title>
+    <style>
+        body {
+            background-color: #1E5631;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        /* Ekran rejestracji */
+        #setup-screen {
+            background-color: #1E5631;
+            width: 360px;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            text-align: center;
+        }
+        #setup-screen h2 {
+            margin-top: 0;
+            font-size: 22px;
+        }
+        #setup-screen p {
+            color: #A8E6CF;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            font-size: 15px;
+            border: none;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        #start-btn {
+            background-color: #3B8526;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 30px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        #start-btn:hover {
+            background-color: #2E7D32;
+        }
+        #error-msg {
+            color: #FF6B6B;
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 10px;
+            min-height: 18px;
+        }
+
+        /* Ekran główny gry */
+        #game-screen {
+            display: none;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        button {
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        #lang-btn {
+            background-color: #3B8526;
+            color: white;
+            font-size: 13px;
+            padding: 10px;
+            width: 80%;
+            margin-bottom: 20px;
+        }
+        #diamond-label {
+            font-size: 26px;
+            font-weight: bold;
+            color: #55FFFF;
+            margin: 10px 0;
+        }
+        #mob-name-label {
+            font-size: 26px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        #mob-hp-label {
+            font-size: 16px;
+            font-weight: bold;
+            color: #FF6B6B;
+            margin: 5px 0;
+        }
+        #mob-btn {
+            background-color: #2E7D32;
+            color: white;
+            font-size: 80px;
+            width: 160px;
+            height: 140px;
+            margin: 15px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+            user-select: none;
+        }
+        #mob-btn:active {
+            transform: scale(0.95);
+        }
+        #crit-info-label {
+            font-size: 15px;
+            font-weight: bold;
+            color: #FFD700;
+            height: 22px;
+            margin: 5px 0;
+        }
+        #info-label {
+            font-size: 14px;
+            font-style: italic;
+            color: #E0E0E0;
+            margin: 10px 0;
+        }
+        #shop-title-label {
+            font-size: 20px;
+            font-weight: bold;
+            color: #FFD700;
+            margin: 20px 0 10px 0;
+        }
+        #current-tool-label {
+            font-size: 15px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        #buy-tool-btn {
+            background-color: #4A4A4A;
+            color: white;
+            font-size: 15px;
+            padding: 12px;
+            width: 85%;
+            margin-top: 15px;
+        }
+
+        /* Okno wyboru języka */
+        #lang-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-box {
+            background-color: #1E5631;
+            border: 2px solid #3B8526;
+            border-radius: 8px;
+            width: 300px;
+            padding: 15px;
+            text-align: center;
+        }
+        #lang-listbox {
+            width: 100%;
+            height: 240px;
+            background-color: #2E7D32;
+            color: white;
+            font-size: 14px;
+            border: none;
+            margin: 10px 0;
+            padding: 5px;
+        }
+        #lang-listbox option {
+            padding: 5px;
+        }
+        #select-lang-btn {
+            background-color: #3B8526;
+            color: white;
+            font-size: 14px;
+            padding: 8px 25px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- OKNO REJESTRACJI (AccountSetupWindow) -->
+    <div id="setup-screen">
+        <h2>Witaj w Minecraft Clicker!</h2>
+        <p>Stwórz konto, aby zapisać progres.</p>
+        
+        <div class="form-group">
+            <label for="username-input">Nazwa użytkownika (2-30 znaków):</label>
+            <input type="text" id="username-input" maxlength="30">
+        </div>
+        
+        <div class="form-group">
+            <label for="email-input">Adres e-mail:</label>
+            <input type="email" id="email-input">
+        </div>
+        
+        <button id="start-btn" onclick="validateAndStart()">Graj!</button>
+        <div id="error-msg"></div>
+    </div>
+
+    <!-- GŁÓWNA GRA (MinecraftClickerGame) -->
+    <div id="game-screen">
+        <button id="lang-btn" onclick="openLanguageWindow()"></button>
+        <div id="diamond-label"></div>
+        <div id="mob-name-label"></div>
+        <div id="mob-hp-label"></div>
+        
+        <button id="mob-btn" onclick="clickMob()">🐔</button>
+        
+        <div id="crit-info-label"></div>
+        <div id="info-label"></div>
+        <div id="shop-title-label"></div>
+        <div id="current-tool-label"></div>
+        <button id="buy-tool-btn" onclick="buyTool()"></button>
+    </div>
+
+    <!-- OKNO WYBORU JĘZYKA -->
+    <div id="lang-modal">
+        <div class="modal-box">
+            <div style="font-weight: bold; font-size: 16px;">Wybierz język:</div>
+            <select id="lang-listbox" size="12"></select>
+            <button id="select-lang-btn" onclick="selectLanguage()">Wybierz</button>
+        </div>
+    </div>
+
+<script>
+    let playerData = {
+        username: "Gracz",
+        email: "",
+        diamonds: 0.0,
+        tool_index: 0,
+        total_clicks: 0
+    };
+
+    let mob_index = 0;
+    let mob_max_hp = 10;
+    let mob_hp = 10;
+    let current_lang = "PL";
+
+    // Twoje dokładne statystyki narzędzi [power, cost, crit_chance]
+    const tool_stats = [
+        [1.0, 250.0, 1],
+        [1.1, 500.0, 3],
+        [1.2, 750.0, 5],
+        [1.3, 1250.0, 7],
+        [1.4, 2500.0, 10],
+        [1.5, 5000.0, 12],
+        [1.6, 12500.0, 14],
+        [1.7, 25000.0, 16],
+        [1.8, 50000.0, 18],
+        [1.9, null, 20]
+    ];
+
+    // Twoje oryginalne emotki mobów
+    const mob_emojis = [
+        "🐔", "🐷", "🐑", "🐄", "😴", "👨‍🌾", "🧑", "🤖", "🧟‍♂️", "💀",
+        "🧟", "🧙‍♀️", "🐷⚔️", "🐗", "🍖", "🛡️", "☠️", "🔥", "👻", "🦹"
+    ];
+
+    const languages_dict = {
+        "EN-GB": "British English",
+        "EN-US": "American English",
+        "EN-AU": "Australian English",
+        "PL": "Polski",
+        "CS": "Čeština",
+        "SK": "Slovenčina",
+        "RU": "Русский",
+        "ES": "Español",
+        "DE": "Deutsch",
+        "FR": "Français",
+        "JA": "日本語",
+        "ZH": "中文",
+        "PT": "Português"
+    };
+
+    const weapon_names = {
+        "EN-GB": [
+            "Bare hand", "Wooden hoe", "Wooden shovel", "Wooden axe", "Wooden sword",
+            "Chainmail hoe", "Stone shovel", "Stone axe", "Stone sword", "Golden hoe"
+        ],
+        "PL": [
+            "Goła łapka", "Drewniana motyka", "Drewniana łopata", "Drewniana siekera", "Drewniany miecz",
+            "Kolczugowa motyka", "Kamienna łopata", "Kamienna siekera", "Kamienny miecz", "Złota motyka"
+        ]
+    };
+
+    const mob_names = {
+        "EN-GB": [
+            "Chicken", "Pig", "Sheep", "Cow", "Lazy Villager", "Villager", "Steve",
+            "Iron Golem", "Zombie Villager", "Skeleton", "Zombie", "Witch",
+            "Zombie Piglin", "Piglin", "Hoglin", "Piglin Brute", "Wither Skeleton",
+            "Blaze", "Ghast", "Enderman"
+        ],
+        "PL": [
+            "Kurczak", "Świnia", "Owca", "Krowa", "Leniwy Villager", "Villager", "Steve",
+            "Iron Golem", "Zombie Villager", "Szkielet", "Zombie", "Wiedźma",
+            "Zombie Piglin", "Piglin", "Hoglin", "Piglin Brute", "Wither Szkielet",
+            "Blaze", "Ghast", "Enderman"
+        ]
+    };
+
+    function getTranslations(lang, username) {
+        const base = {
+            "EN-GB": {
+                title: `💎 ${username}'s Diamonds: `,
+                info: "Click the mob to earn diamonds!",
+                shop_title: "--- SHOP / TOOLS ---",
+                buy_tool: "Buy: ",
+                power_lbl: "Power: ",
+                crit_lbl: "Crit: ",
+                cost_lbl: "Cost: ",
+                max_tool: "Max tool reached! (",
+                lang_btn: "🌍 Change Language"
+            },
+            "PL": {
+                title: `💎 Diamenty gracza ${username}: `,
+                info: "Klikaj w moba, aby zdobywać diamenty!",
+                shop_title: "--- SKLEP / NARZĘDZIA ---",
+                buy_tool: "Kup: ",
+                power_lbl: "Siła: ",
+                crit_lbl: "Kryt: ",
+                cost_lbl: "Koszt: ",
+                max_tool: "Masz maksymalne narzędzie! (",
+                lang_btn: "🌍 Zmień język"
+            }
+        };
+        return base[lang] || base["EN-GB"];
+    }
+
+    // Sprawdzenie czy istnieje zapis (odpowiednik player_save.json)
+    window.onload = function() {
+        const saved = localStorage.getItem("player_save");
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (parsed.username) {
+                    playerData = parsed;
+                    startGame();
+                    return;
+                }
+            } catch (e) {}
+        }
+        document.getElementById("setup-screen").style.display = "block";
+    };
+
+    function validateAndStart() {
+        const username = document.getElementById("username-input").value.trim();
+        const email = document.getElementById("email-input").value.trim();
+        const errorMsg = document.getElementById("error-msg");
+
+        if (username.length < 2 || username.length > 30) {
+            errorMsg.innerText = "Nazwa użytkownika musi mieć od 2 do 30 znaków!";
+            return;
+        }
+        if (!email.includes("@") || !email.includes(".")) {
+            errorMsg.innerText = "Wprowadź poprawny adres e-mail!";
+            return;
+        }
+
+        playerData = {
+            username: username,
+            email: email,
+            diamonds: 0.0,
+            tool_index: 0,
+            total_clicks: 0
+        };
+        saveGame();
+        startGame();
+    }
+
+    function startGame() {
+        document.getElementById("setup-screen").style.display = "none";
+        document.getElementById("game-screen").style.display = "block";
+        document.title = `Minecraft Clicker - Gracz: ${playerData.username}`;
+        updateMobByClicks();
+        updateUI();
+    }
+
+    function saveGame() {
+        localStorage.setItem("player_save", JSON.stringify(playerData));
+    }
+
+    function updateMobByClicks() {
+        const c = playerData.total_clicks;
+        if (c >= 4000000) mob_index = 19;
+        else if (c >= 2500000) mob_index = 18;
+        else if (c >= 1750000) mob_index = 17;
+        else if (c >= 1000000) mob_index = 16;
+        else if (c >= 750000) mob_index = 15;
+        else if (c >= 450000) mob_index = 14;
+        else if (c >= 300000) mob_index = 13;
+        else if (c >= 200000) mob_index = 12;
+        else if (c >= 150000) mob_index = 11;
+        else if (c >= 125000) mob_index = 10;
+        else if (c >= 80000) mob_index = 9;
+        else if (c >= 50000) mob_index = 8;
+        else if (c >= 25000) mob_index = 7;
+        else if (c >= 10000) mob_index = 6;
+        else if (c >= 5000) mob_index = 5;
+        else if (c >= 2500) mob_index = 4;
+        else if (c >= 750) mob_index = 3;
+        else if (c >= 250) mob_index = 2;
+        else if (c >= 100) mob_index = 1;
+        else mob_index = 0;
+    }
+
+    function clickMob() {
+        const [power, , crit_chance] = tool_stats[playerData.tool_index];
+        playerData.total_clicks += 1;
+        updateMobByClicks();
+
+        const roll = Math.floor(Math.random() * 100) + 1;
+        const is_crit = roll <= crit_chance;
+        let damage = power;
+
+        const critLabel = document.getElementById("crit-info-label");
+        if (is_crit) {
+            damage = power * 2;
+            critLabel.innerText = "✨ TRAFIENIE KRYTYCZNE! (x2) ✨";
+        } else {
+            critLabel.innerText = "";
+        }
+
+        playerData.diamonds += damage;
+        mob_hp -= damage;
+
+        if (mob_hp <= 0) {
+            playerData.diamonds += mob_max_hp * 0.5;
+            mob_max_hp = Math.floor(mob_max_hp * 1.3) + 5;
+            mob_hp = mob_max_hp;
+        }
+
+        saveGame();
+        updateUI();
+    }
+
+    function buyTool() {
+        const cost = tool_stats[playerData.tool_index][1];
+        if (cost !== null && playerData.diamonds >= cost) {
+            playerData.diamonds -= cost;
+            playerData.tool_index += 1;
+            document.getElementById("crit-info-label").innerText = "";
+            saveGame();
+            updateUI();
+        }
+    }
+
+    function openLanguageWindow() {
+        const listbox = document.getElementById("lang-listbox");
+        listbox.innerHTML = "";
+        for (const [code, name] of Object.entries(languages_dict)) {
+            const option = document.createElement("option");
+            option.value = code;
+            option.text = `${name} (${code})`;
+            if (code === current_lang) option.selected = true;
+            listbox.appendChild(option);
+        }
+        document.getElementById("lang-modal").style.display = "flex";
+    }
+
+    function selectLanguage() {
+        const listbox = document.getElementById("lang-listbox");
+        if (listbox.value) {
+            current_lang = listbox.value;
+            updateUI();
+        }
+        document.getElementById("lang-modal").style.display = "none";
+    }
+
+    function updateUI() {
+        const t = getTranslations(current_lang, playerData.username);
+        const weapons = weapon_names[current_lang] || weapon_names["EN-GB"];
+        const mobs = mob_names[current_lang] || mob_names["EN-GB"];
+
+        document.getElementById("lang-btn").innerText = t.lang_btn;
+        document.getElementById("diamond-label").innerText = `${t.title}${playerData.diamonds.toFixed(1)}`;
+        document.getElementById("info-label").innerText = t.info;
+        document.getElementById("shop-title-label").innerText = t.shop_title;
+
+        document.getElementById("mob-name-label").innerText = mobs[mob_index];
+        const displayHp = Math.max(0, Math.round(mob_hp * 10) / 10);
+        document.getElementById("mob-hp-label").innerText = `❤️ HP: ${displayHp} / ${mob_max_hp} (Uderzenia: ${playerData.total_clicks})`;
+        document.getElementById("mob-btn").innerText = mob_emojis[mob_index];
+
+        const [current_power, next_cost, current_crit] = tool_stats[playerData.tool_index];
+        const current_weapon_name = weapons[playerData.tool_index];
+        document.getElementById("current-tool-label").innerText = 
+            `🛠️ ${current_weapon_name} (${t.power_lbl}${current_power.toFixed(1)} | ${t.crit_lbl}${current_crit}%)`;
+
+        const buyBtn = document.getElementById("buy-tool-btn");
+        if (next_cost !== null) {
+            const next_weapon_name = weapons[playerData.tool_index + 1];
+            const [next_power, , next_crit] = tool_stats[playerData.tool_index + 1];
+            const formattedCost = Math.round(next_cost).toLocaleString("en-US");
+            
+            buyBtn.innerText = `${t.buy_tool}${next_weapon_name} (${t.power_lbl}${next_power.toFixed(1)} | ${t.crit_lbl}${next_crit}%) | ${t.cost_lbl}${formattedCost} 💎`;
+            buyBtn.style.backgroundColor = playerData.diamonds >= next_cost ? "#2E7D32" : "#555555";
+            buyBtn.disabled = false;
+        } else {
+            buyBtn.innerText = `${t.max_tool}${current_weapon_name})`;
+            buyBtn.style.backgroundColor = "#222222";
+            buyBtn.disabled = true;
+        }
+    }
+</script>
+
+</body>
+</html>
